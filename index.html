@@ -70,23 +70,22 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: rgba(255, 255, 255, 0.5);
-        backdrop-filter: blur(10px);
-        z-index: 0;
-        pointer-events: none;
+        background-color: rgba(0, 0, 0, 0.6); /* Fondo semitransparente */
+        z-index: 2;
         opacity: 0;
+        pointer-events: none;
         transition: opacity 0.5s ease;
     }
 
     .overlay-container.show {
-        pointer-events: auto;
         opacity: 1;
+        pointer-events: auto;
     }
 
     .overlay-box {
-        background-color: #b3e0ff;
+        background-color: rgba(255, 255, 255, 0.9); /* Fondo del cuadro de opciones */
         border-radius: 10px;
-        padding: 40px;
+        padding: 20px;
         width: calc(25% - 20px);
         margin: 20px;
         text-align: center;
@@ -96,6 +95,15 @@
 
     .overlay-container.show .overlay-box {
         opacity: 1;
+    }
+
+    .overlay-box h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .overlay-box p {
+        color: #666;
     }
 
     /* Estilos para el chatbot */
@@ -250,6 +258,62 @@
                     }
                 }
             );
+
+            chatForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                const message = chatInput.value.trim();
+                if (message === '') return;
+
+                const userMessage = { role: 'user', message };
+                chatHistory.push(userMessage);
+                renderMessage(userMessage);
+
+                const chunks = await engine.chat.completions.create({
+                    messages: chatHistory,
+                    stream: true
+                });
+
+                let botReply = '';
+                for await (const chunk of chunks) {
+                    const choice = chunk.choices[0];
+                    const content = choice?.delta?.content ?? '';
+                    botReply += content;
+                }
+
+                const botMessage = { role: 'bot', message: botReply };
+                chatHistory.push(botMessage);
+                renderMessage(botMessage);
+                chatInput.value = '';
+            });
+
+            function renderMessage({ role, message }) {
+                const messageElement = document.createElement('li');
+                messageElement.classList.add('message', role);
+                messageElement.innerHTML = `
+                    <span>${role === 'bot' ? 'GPT' : 'Tú'}</span>
+                    <p>${message}</p>
+                `;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function validateForm() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (username === 'usuario' && password === 'contraseña') {
+                initializeChat();
+                return false; // Evitar envío del formulario y navegación
+            } else {
+                document.getElementById('message').textContent = 'Credenciales incorrectas. Inténtalo de nuevo.';
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>
+
 
             chatForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
