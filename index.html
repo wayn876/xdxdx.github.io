@@ -42,10 +42,7 @@
         <!-- Otros overlay-box omitidos por brevedad -->
     </div>
 
-    <script type="module" src="script.js"></script>
     <script type="module">
-        import { CreateWebWorkerMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm";
-
         const $ = el => document.querySelector(el);
         const $messages = $('#messages');
         const $chatForm = $('#chatForm');
@@ -55,6 +52,9 @@
         const $button = $('button');
         const $info = $('small');
         const $loading = $('.loading');
+        const $loginForm = $('#loginForm');
+        const $loginContainer = $('#loginContainer');
+        const $message = $('#message');
 
         let messages = [];
         let end = false;
@@ -128,8 +128,23 @@
             }
         }
 
-        initChat().catch(err => console.error('Error inicializando el chat:', err));
+        async function validateForm() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'usuario' && password === 'contraseña') { // Aquí puedes cambiar las credenciales
+                $message.innerHTML = 'Inicio de sesión exitoso.';
+                $loginContainer.style.opacity = 0;
+                $overlayContainer.classList.add('show');
+                await initChat(); // Inicializar el chat después del inicio de sesión exitoso
+                return false; // Evitar el envío del formulario
+            } else {
+                $message.innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
+                return false; // Evitar el envío del formulario
+            }
+        }
+
+        validateForm().catch(err => console.error('Error validando el formulario:', err));
     </script>
 </body>
 </html>
-
