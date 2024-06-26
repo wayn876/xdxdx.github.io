@@ -5,13 +5,189 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Iniciar sesión</title>
 <style>
-    /* Estilos CSS existentes omitidos por brevedad */
+    /* Estilos generales */
+    body {
+        font-family: Arial, sans-serif;
+        background: url('https://wallpapercave.com/wp/wp4194085.png') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .login-container {
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 2px solid #66c2ff;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 300px;
+        max-width: 80%;
+        text-align: center;
+        transition: opacity 0.8s ease;
+        z-index: 1;
+        position: relative;
+    }
+
+    .login-container h2 {
+        color: #333;
+    }
+
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .login-container input[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #66c2ff;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .login-container input[type="submit"]:hover {
+        background-color: #4da6ff;
+    }
+
+    /* Estilos para el overlay-container y los overlay-box */
+    .overlay-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 80%;
+        height: 100%;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(10px);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .overlay-container.show {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .overlay-box {
+        background-color: #b3e0ff;
+        border-radius: 10px;
+        padding: 40px;
+        width: calc(25% - 20px);
+        margin: 20px;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+    }
+
+    .overlay-container.show .overlay-box {
+        opacity: 1;
+    }
+
+    /* Estilos para el chatbot */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chat-messages {
+        list-style-type: none;
+        padding: 0;
+        max-height: 300px;
+        overflow-y: auto;
+        width: 100%;
+        margin-bottom: 10px;
+        padding-right: 10px;
+    }
+
+    .message {
+        display: flex;
+        align-items: center;
+        max-width: 80%;
+        word-wrap: break-word;
+        padding: 8px;
+        border-radius: 8px;
+    }
+
+    .message.user {
+        justify-content: flex-end;
+        background-color: #f0f0f0;
+        margin-left: auto;
+    }
+
+    .message.bot {
+        justify-content: flex-start;
+        background-color: #b3e0ff;
+        margin-right: auto;
+    }
+
+    .message span {
+        width: 36px;
+        height: 36px;
+        background-color: #eee;
+        color: #333;
+        font-size: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+
+    .message p {
+        margin: 0;
+        padding: 8px;
+    }
+
+    .chat-input {
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .chat-input input[type="text"] {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .chat-input button {
+        background-color: #66c2ff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .chat-input button:hover {
+        background-color: #4da6ff;
+    }
 </style>
 </head>
 <body>
     <div class="login-container" id="loginContainer">
         <h2>Iniciar sesión</h2>
-        <form id="loginForm" action="#" method="post" onsubmit="return validateForm()">
+        <form id="loginForm" onsubmit="return validateForm()">
             <input type="text" id="username" name="username" placeholder="Nombre de usuario" required><br>
             <input type="password" id="password" name="password" placeholder="Contraseña" required><br>
             <input type="submit" value="Iniciar sesión">
@@ -22,129 +198,94 @@
     <div class="overlay-container" id="overlayContainer">
         <div class="overlay-box">
             <h3>Opción 1</h3>
-            <div id="chatContainer">
-                <main>
-                    <ul id="messages"></ul>
-                </main>
-                <form id="chatForm">
-                    <input type="text" id="userInput" placeholder="Escribe tu mensaje aquí...">
-                    <button type="submit">Enviar</button>
-                </form>
-                <small>&nbsp;</small>
-                <template id="messageTemplate">
-                    <li class="message">
-                        <span></span>
-                        <p></p>
+            <div class="chat-container">
+                <ul class="chat-messages" id="chatMessages">
+                    <li class="message bot">
+                        <span>GPT</span>
+                        <p>¡Hola! Soy un chatbot. ¿En qué puedo ayudarte?</p>
                     </li>
-                </template>
+                </ul>
+                <form id="chatForm" class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Escribe tu mensaje aquí...">
+                    <button type="submit" id="sendButton">Enviar</button>
+                </form>
             </div>
         </div>
-        <!-- Otros overlay-box omitidos por brevedad -->
+        <div class="overlay-box">
+            <h3>Opción 2</h3>
+            <p>Contenido del cuadro 2</p>
+        </div>
+        <div class="overlay-box">
+            <h3>Opción 3</h3>
+            <p>Contenido del cuadro 3</p>
+        </div>
+        <div class="overlay-box">
+            <h3>Opción 4</h3>
+            <p>Contenido del cuadro 4</p>
+        </div>
     </div>
 
     <script type="module">
         const $ = el => document.querySelector(el);
-        const $messages = $('#messages');
-        const $chatForm = $('#chatForm');
-        const $userInput = $('#userInput');
-        const $template = $('#messageTemplate');
-        const $chatContainer = $('#chatContainer');
-        const $button = $('button');
-        const $info = $('small');
-        const $loading = $('.loading');
-        const $loginForm = $('#loginForm');
-        const $loginContainer = $('#loginContainer');
-        const $message = $('#message');
+        const chatForm = $('#chatForm');
+        const chatInput = $('#chatInput');
+        const chatMessages = $('#chatMessages');
 
-        let messages = [];
-        let end = false;
+        let chatHistory = [
+            { role: 'bot', message: '¡Hola! Soy un chatbot. ¿En qué puedo ayudarte?' }
+        ];
 
-        const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
+        chatForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const message = chatInput.value.trim();
+            if (message === '') return;
 
-        async function initChat() {
-            const engine = await CreateWebWorkerMLCEngine(
-                new Worker('./worker.js', { type: 'module' }),
-                SELECTED_MODEL,
-                {
-                    initProgressCallback: (info) => {
-                        $info.textContent = info.text;
-                        if (info.progress === 1 && !end) {
-                            end = true;
-                            $loading?.parentNode?.removeChild($loading);
-                            $button.removeAttribute('disabled');
-                            addMessage("¡Hola! Soy un ChatGPT que se ejecuta completamente en tu navegador. ¿En qué puedo ayudarte hoy?", 'bot');
-                            $userInput.focus();
-                        }
-                    }
-                }
-            );
+            addMessage('user', message);
+            chatInput.value = '';
+            chatInput.focus();
 
-            $chatForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const messageText = $userInput.value.trim();
+            // Simular respuesta del bot (puedes reemplazar con tu lógica real)
+            await simulateBotReply(message);
+        });
 
-                if (messageText !== '') {
-                    $userInput.value = '';
-                }
-
-                addMessage(messageText, 'user');
-                $button.setAttribute('disabled', '');
-
-                messages.push({ role: 'user', content: messageText });
-
-                const chunks = await engine.chat.completions.create({
-                    messages,
-                    stream: true
-                });
-
-                let reply = '';
-
-                for await (const chunk of chunks) {
-                    const choice = chunk.choices[0];
-                    const content = choice?.delta?.content ?? '';
-                    reply += content;
-                }
-
-                addMessage(reply, 'bot');
-                messages.push({ role: 'assistant', content: reply });
-                $chatContainer.scrollTop = $chatContainer.scrollHeight;
-
-                $button.removeAttribute('disabled');
-            });
-
-            function addMessage(text, sender) {
-                const clonedTemplate = $template.content.cloneNode(true);
-                const $newMessage = clonedTemplate.querySelector('.message');
-                const $who = $newMessage.querySelector('span');
-                const $text = $newMessage.querySelector('p');
-
-                $text.textContent = text;
-                $who.textContent = sender === 'bot' ? 'GPT' : 'Tú';
-                $newMessage.classList.add(sender);
-                $messages.appendChild($newMessage);
-                $chatContainer.scrollTop = $chatContainer.scrollHeight;
-
-                return $text;
-            }
+        async function simulateBotReply(userMessage) {
+            const botMessage = await getBotReply(userMessage);
+            addMessage('bot', botMessage);
         }
 
-        async function validateForm() {
+        async function getBotReply(message) {
+            // Aquí puedes realizar la solicitud a tu modelo de chatbot (no implementado aquí)
+            // Esta función debe devolver la respuesta del chatbot según el mensaje del usuario
+            // Puedes implementar esto usando Web Workers y manejar la lógica del modelo de ML aquí
+            // Ejemplo de respuesta simulada:
+            return `Esto es una respuesta del bot a: "${message}"`;
+        }
+
+        function addMessage(role, text) {
+            const messageElement = document.createElement('li');
+            messageElement.classList.add('message', role === 'bot' ? 'bot' : 'user');
+            messageElement.innerHTML = `
+                <span>${role === 'bot' ? 'GPT' : 'Tú'}</span>
+                <p>${text}</p>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function validateForm() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            if (username === 'usuario' && password === 'contraseña') { // Aquí puedes cambiar las credenciales
-                $message.innerHTML = 'Inicio de sesión exitoso.';
-                $loginContainer.style.opacity = 0;
-                $overlayContainer.classList.add('show');
-                await initChat(); // Inicializar el chat después del inicio de sesión exitoso
+            if (username === 'Wayan' && password === 'Gatos15') {
+                document.getElementById('message').innerHTML = 'Inicio de sesión exitoso.';
+                document.getElementById('loginContainer').style.opacity = 0;
+                document.getElementById('overlayContainer').classList.add('show');
                 return false; // Evitar el envío del formulario
             } else {
-                $message.innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
+                document.getElementById('message').innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
                 return false; // Evitar el envío del formulario
             }
         }
-
-        validateForm().catch(err => console.error('Error validando el formulario:', err));
     </script>
 </body>
 </html>
