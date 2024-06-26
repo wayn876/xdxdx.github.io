@@ -1,335 +1,350 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iniciar sesión</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión</title>
+  <style>
     body {
-        font-family: Arial, sans-serif;
-        background: url('https://wallpapercave.com/wp/wp4194085.png') no-repeat center center fixed;
-        background-size: cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        overflow: hidden; /* Evitar desbordamiento del fondo */
+      font-family: Arial, sans-serif;
+      background: url('https://wallpapercave.com/wp/wp4194085.png') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
     }
+
     .login-container {
-        background-color: rgba(255, 255, 255, 0.5); /* Fondo semitransparente blanco */
-        border: 2px solid #66c2ff; /* Borde azul */
-        border-radius: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-        width: 300px;
-        max-width: 80%;
-        text-align: center;
-        transition: opacity 0.8s ease; /* Transición suave de la opacidad */
-        z-index: 1; /* Aseguramos que el contenedor de inicio de sesión esté por encima */
-        position: relative; /* Añadido para z-index */
+      background-color: rgba(255, 255, 255, 0.5);
+      border: 2px solid #66c2ff;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 300px;
+      max-width: 80%;
+      text-align: center;
+      transition: opacity 0.8s ease;
+      z-index: 1;
+      position: relative;
     }
+
     .login-container h2 {
-        color: #333;
+      color: #333;
     }
+
     .login-container input[type="text"],
     .login-container input[type="password"] {
-        width: calc(100% - 20px);
-        padding: 10px;
-        margin: 10px 0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
+
     .login-container input[type="submit"] {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        background-color: #66c2ff; /* Color azul pastel */
-        color: white;
-        cursor: pointer;
-        font-size: 16px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #66c2ff;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
     }
+
     .login-container input[type="submit"]:hover {
-        background-color: #4da6ff; /* Color azul pastel más oscuro al pasar el mouse */
+      background-color: #4da6ff;
     }
 
     .overlay-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 80%;
-        height: 100%;
-        border-radius: 10px;
-        display: flex;
-        justify-content: center; /* Centra los elementos horizontalmente */
-        align-items: center; /* Centra los elementos verticalmente */
-        background-color: rgba(255, 255, 255, 0.5); /* Fondo semi-transparente blanco */
-        backdrop-filter: blur(10px); /* Efecto de desenfoque en el fondo */
-        z-index: 0; /* Aseguramos que esté detrás del login-container */
-        pointer-events: none; /* Evitar interacciones con los elementos de fondo */
-        opacity: 0; /* Inicialmente invisible */
-        transition: opacity 0.5s ease;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80%;
+      height: 100%;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
 
     .overlay-container.show {
-        pointer-events: auto; /* Permitir interacciones cuando está visible */
-        opacity: 1; /* Hacer visible */
+      pointer-events: auto;
+      opacity: 1;
     }
 
     .overlay-box {
-        background-color: #b3e0ff; /* Fondo azul pastel */
-        border-radius: 10px;
-        padding: 40px;
-        width: calc(25% - 20px); /* Ancho del cuadro de opción */
-        margin: 20px; /* Espacio entre los cuadros */
-        text-align: center;
-        opacity: 0; /* Inicialmente invisible */
-        transition: opacity 0.8s ease;
+      background-color: #b3e0ff;
+      border-radius: 10px;
+      padding: 40px;
+      width: calc(25% - 20px);
+      margin: 20px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
     }
 
     .overlay-container.show .overlay-box {
-        opacity: 1; /* Hacer visible cuando el overlay-container tiene la clase show */
+      opacity: 1;
     }
 
     main {
-        width: 400px;
-        max-width: 100%;
-        height: 70vh;
-        background: #fff;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        padding: 8px;
-        margin-bottom: 16px;
-        overflow-y: auto;
-        scroll-behavior: smooth;
+      width: 400px;
+      max-width: 100%;
+      height: 70vh;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      margin-bottom: 16px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
     }
 
     ul {
-        display: flex;
-        flex-direction: column;
-        list-style: none;
-        padding: 0;
+      display: flex;
+      flex-direction: column;
+      list-style: none;
+      padding: 0;
     }
 
     .message {
-        display: flex;
-        flex-direction: column;
-        margin: 4px 0;
-        padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+      margin: 4px 0;
+      padding: 4px 8px;
     }
 
     .message span {
-        width: 36px;
-        height: 36px;
-        background: #eee;
-        font-size: 12px;
-        font-weight: 500;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 999999px;
+      width: 36px;
+      height: 36px;
+      background: #eee;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 999999px;
     }
 
     .message p {
-        border-radius: 4px;
-        padding: 4px 8px;
-        margin-top: 4px;
+      border-radius: 4px;
+      padding: 8px;
+      margin-top: 4px;
     }
 
     .message.user {
-        align-self: flex-end;
-        align-items: flex-end;
+      align-self: flex-end;
+      align-items: flex-end;
+      background: rgb(219, 236, 255);
     }
 
     .message.bot {
-        align-self: flex-start;
+      align-self: flex-start;
+      background: rgb(198, 255, 220);
     }
 
     form {
-        display: flex;
+      display: flex;
+      margin-top: 8px;
     }
 
-    input[type="text"] {
-        border-radius: 999999px;
-        flex-grow: 1;
-        border: 0;
-        padding: 8px;
-        margin-right: 8px;
-        border: 1px solid #ccc;
+    input {
+      border-radius: 999999px;
+      flex-grow: 1;
+      border: 1px solid #ccc;
+      padding: 8px;
+      margin-right: 8px;
     }
 
     button {
-        background: #09f;
-        border: 0;
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-        padding: 8px;
-        transition: background .3s ease;
+      background: #09f;
+      border: 0;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 8px;
+      transition: background .3s ease;
     }
 
     button[disabled] {
-        background: #ccc;
-        opacity: .6;
-        pointer-events: none;
+      background: #ccc;
+      opacity: .6;
+      pointer-events: none;
     }
 
     button:hover {
-        background: rgb(0, 104, 173);
+      background: rgb(0, 104, 173);
     }
 
-    .small-text {
-        font-size: 10px;
-        color: #555;
-        margin-top: 8px;
+    small {
+      font-size: 10px;
+      color: #555;
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      width: 400px;
+      text-align: center;
     }
 
     .loading {
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        height: 100%;
-        align-items: center;
-        flex-direction: column;
-        margin-top: 50%;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      height: 100%;
+      align-items: center;
+      flex-direction: column;
+      margin-top: 50%;
     }
 
     .loading i {
-        pointer-events: none;
-        width: 2.5em;
-        height: 2.5em;
-        border: 0.4em solid transparent;
-        border-color: #eee;
-        border-top-color: #3E67EC;
-        border-radius: 50%;
-        animation: loadingspin 1s linear infinite;
-    }
-
-    .loading h4 {
-        color: #444;
-        margin-bottom: 8px;
-    }
-
-    .loading h5 {
-        font-weight: 400;
-        margin: 0;
-        font-size: 10px;
-        opacity: .4;
+      width: 2.5em;
+      height: 2.5em;
+      border: 0.4em solid transparent;
+      border-color: #eee;
+      border-top-color: #3E67EC;
+      border-radius: 50%;
+      animation: loadingspin 1s linear infinite;
     }
 
     @keyframes loadingspin {
-        100% {
-            transform: rotate(360deg)
-        }
+      100% {
+        transform: rotate(360deg)
+      }
     }
-</style>
+  </style>
+
+  <script type="module">
+    import { CreateWebWorkerMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm";
+
+    const $ = selector => document.querySelector(selector);
+
+    const $form = $('.overlay-box form');
+    const $input = $('.overlay-box input');
+    const $messages = $('.overlay-box ul');
+    const $container = $('.overlay-box main');
+    const $button = $('.overlay-box button');
+    const $info = $('.overlay-box small');
+    const $loading = $('.overlay-box .loading');
+
+    let messages = [];
+    let end = false;
+
+    const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
+
+    async function initializeChat() {
+      const engine = await CreateWebWorkerMLCEngine(
+        new Worker('./worker.js', { type: 'module' }),
+        SELECTED_MODEL,
+        {
+          initProgressCallback: (info) => {
+            $info.textContent = info.text;
+            if (info.progress === 1 && !end) {
+              end = true;
+              $loading.parentNode.removeChild($loading);
+              $button.removeAttribute('disabled');
+              addMessage("¡Hola! Soy un ChatGPT que se ejecuta completamente en tu navegador. ¿En qué puedo ayudarte hoy?", 'bot');
+              $input.focus();
+            }
+          }
+        }
+      );
+
+      $form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const messageText = $input.value.trim();
+
+        if (messageText !== '') {
+          $input.value = '';
+          addMessage(messageText, 'user');
+          $button.setAttribute('disabled', '');
+
+          messages.push({ role: 'user', content: messageText });
+
+          const chunks = await engine.chat.completions.create({
+            messages,
+            stream: true
+          });
+
+          let reply = "";
+
+          for await (const chunk of chunks) {
+            const choice = chunk.choices[0];
+            const content = choice?.delta?.content ?? "";
+            reply += content;
+          }
+
+          addMessage(reply, 'bot');
+          messages.push({ role: 'assistant', content: reply });
+          $container.scrollTop = $container.scrollHeight;
+          $button.removeAttribute('disabled');
+        }
+      });
+    }
+
+    function addMessage(text, sender) {
+      const $newMessage = document.createElement('li');
+      $newMessage.classList.add('message', sender);
+
+      const $who = document.createElement('span');
+      $who.textContent = sender === 'bot' ? 'GPT' : 'Tú';
+      $newMessage.appendChild($who);
+
+      const $text = document.createElement('p');
+      $text.textContent = text;
+      $newMessage.appendChild($text);
+
+      $messages.appendChild($newMessage);
+      $container.scrollTop = $container.scrollHeight;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeChat();
+    });
+  </script>
 </head>
+
 <body>
-    <div class="login-container" id="loginContainer">
-        <h2>Iniciar sesión</h2>
-        <form id="loginForm" action="#" method="post" onsubmit="return validateForm()">
-            <input type="text" id="username" name="username" placeholder="Nombre de usuario" required><br>
-            <input type="password" id="password" name="password" placeholder="Contraseña" required><br>
-            <input type="submit" value="Iniciar sesión">
-        </form>
-        <p id="message"></p>
+  <div class="login-container" id="loginContainer">
+    <h2>Iniciar sesión</h2>
+    <form>
+      <input type="text" placeholder="Usuario">
+      <input type="password" placeholder="Contraseña">
+      <input type="submit" value="Iniciar sesión">
+    </form>
+  </div>
+
+  <div class="overlay-container" id="overlayContainer">
+    <div class="overlay-box">
+      <h2>ChatGPT Local 100% privado, gratis y maravilloso</h2>
+      <main>
+        <ul></ul>
+      </main>
+      <form>
+        <input placeholder="Escribe tu mensaje aquí...">
+        <button disabled>Enviar</button>
+      </form>
+      <small>&nbsp;</small>
+      <div class="loading">
+        <i></i>
+        <h4>Cargando...</h4>
+        <h5>Esto puede tardar un poco. Paciencia.</h5>
+      </div>
     </div>
-
-    <div class="overlay-container" id="overlayContainer">
-        <div class="overlay-box">
-            <h3>Opción 1</h3>
-            <div class="chat-container">
-                <main>
-                    <ul id="messageList">
-                        <li class="loading">
-                            <i></i>
-                            <h4>Cargando...</h4>
-                            <h5>Esto puede tardar un poco. Paciencia.</h5>
-                        </li>
-                    </ul>
-                </main>
-                <form id="chatForm">
-                    <input type="text" id="chatInput" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
-                    <button type="submit" id="sendMessageButton" disabled>Enviar</button>
-                </form>
-            </div>
-        </div>
-        <div class="overlay-box">
-            <h3>Opción 2</h3>
-            <p>Contenido del cuadro 2</p>
-        </div>
-        <div class="overlay-box">
-            <h3>Opción 3</h3>
-            <p>Contenido del cuadro 3</p>
-        </div>
-        <div class="overlay-box">
-            <h3>Opción 4</h3>
-            <p>Contenido del cuadro 4</p>
-        </div>
-    </div>
-
-    <script>
-        function validateForm() {
-            var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
-
-            if (username === 'Wayan' && password === 'Gatos15') {
-                document.getElementById('message').innerHTML = 'Inicio de sesión exitoso.';
-                document.getElementById('loginContainer').style.opacity = 0;
-                document.getElementById('overlayContainer').classList.add('show');
-                initializeChat();
-                return false; // Evitar el envío del formulario
-            } else {
-                document.getElementById('message').innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
-                return false; // Evitar el envío del formulario
-            }
-        }
-
-        async function initializeChat() {
-            const messageList = document.getElementById('messageList');
-            const chatInput = document.getElementById('chatInput');
-            const sendMessageButton = document.getElementById('sendMessageButton');
-            const loadingMessage = messageList.querySelector('.loading');
-            const chatForm = document.getElementById('chatForm');
-
-            loadingMessage.style.display = 'flex';
-
-            // Simulación de carga de mensajes
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            loadingMessage.style.display = 'none';
-
-            chatForm.addEventListener('submit', async function(event) {
-                event.preventDefault();
-                const userMessage = chatInput.value.trim();
-
-                if (userMessage === '') return;
-
-                appendMessage(userMessage, 'user');
-
-                chatInput.value = '';
-                sendMessageButton.disabled = true;
-
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulación de respuesta del bot
-
-                const botMessage = `¡Hola! Soy un bot respondiendo a "${userMessage}".`;
-                appendMessage(botMessage, 'bot');
-            });
-
-            function appendMessage(message, role) {
-                const messageElement = document.createElement('li');
-                messageElement.className = `message ${role}`;
-                messageElement.innerHTML = `<span>${role.charAt(0).toUpperCase()}</span><p>${message}</p>`;
-                messageList.appendChild(messageElement);
-                messageList.scrollTop = messageList.scrollHeight;
-            }
-
-            chatInput.addEventListener('input', function() {
-                sendMessageButton.disabled = chatInput.value.trim() === '';
-            });
-        }
-    </script>
+  </div>
 </body>
+
 </html>
