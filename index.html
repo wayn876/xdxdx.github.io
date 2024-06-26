@@ -219,6 +219,19 @@
         transform: rotate(360deg)
       }
     }
+
+    .login-options {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .login-options a {
+      text-decoration: none;
+      color: #09f;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 
   <script type="module">
@@ -311,8 +324,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initializeChat();
-
       // Event listener para el formulario de inicio de sesión
       const loginForm = $('.login-container form');
       loginForm.addEventListener('submit', (event) => {
@@ -338,6 +349,21 @@
       closeChatButton.addEventListener('click', () => {
         $overlayContainer.classList.remove('show');
       });
+
+      // Inicializar el chat cuando se abra el overlay
+      loginButton.addEventListener('click', () => {
+        initializeChat();
+      });
+
+      // Event listener para las opciones de inicio de sesión
+      const loginOptions = document.querySelectorAll('.login-options a');
+      loginOptions.forEach(option => {
+        option.addEventListener('click', (event) => {
+          event.preventDefault();
+          const text = event.target.textContent.trim();
+          alert(`Opción seleccionada: ${text}`);
+        });
+      });
     });
   </script>
 </head>
@@ -350,6 +376,11 @@
       <input type="password" id="password" placeholder="Contraseña">
       <input type="submit" value="Iniciar sesión">
     </form>
+    <div class="login-options">
+      <a href="#">Registro</a>
+      <a href="#">¿Olvidaste la contraseña?</a>
+      <a href="#">Cerrar</a>
+    </div>
     <button id="loginButton">Abrir Chat</button>
   </div>
 
