@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar sesión</title>
+  <title>Iniciar sesión y ChatGPT</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -64,69 +64,63 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 80%;
+      width: 100%;
       height: 100%;
-      border-radius: 10px;
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: rgba(255, 255, 255, 0.5);
-      backdrop-filter: blur(10px);
-      z-index: 0;
-      pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2;
       opacity: 0;
+      pointer-events: none;
       transition: opacity 0.5s ease;
     }
 
     .overlay-container.show {
-      pointer-events: auto;
       opacity: 1;
+      pointer-events: auto;
     }
 
     .overlay-box {
-      background-color: #b3e0ff;
+      background-color: rgba(255, 255, 255, 0.9);
       border-radius: 10px;
-      padding: 40px;
-      width: calc(25% - 20px);
-      margin: 20px;
+      padding: 20px;
+      width: 80%;
+      max-width: 400px;
       text-align: center;
-      opacity: 0;
-      transition: opacity 0.8s ease;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .overlay-container.show .overlay-box {
-      opacity: 1;
+    .overlay-box h2 {
+      margin-top: 0;
+      color: #333;
     }
 
-    main {
-      width: 400px;
-      max-width: 100%;
-      height: 70vh;
-      background: #fff;
+    .overlay-box main {
+      height: 50vh;
+      overflow-y: auto;
       border: 1px solid #ccc;
       border-radius: 4px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      padding: 8px;
       margin-bottom: 16px;
-      overflow-y: auto;
-      scroll-behavior: smooth;
+      padding: 8px;
     }
 
-    ul {
+    .overlay-box ul {
       display: flex;
       flex-direction: column;
       list-style: none;
       padding: 0;
     }
 
-    .message {
+    .overlay-box .message {
       display: flex;
       flex-direction: column;
       margin: 4px 0;
       padding: 4px 8px;
     }
 
-    .message span {
+    .overlay-box .message span {
       width: 36px;
       height: 36px;
       background: #eee;
@@ -138,29 +132,29 @@
       border-radius: 999999px;
     }
 
-    .message p {
+    .overlay-box .message p {
       border-radius: 4px;
       padding: 8px;
       margin-top: 4px;
     }
 
-    .message.user {
+    .overlay-box .message.user {
       align-self: flex-end;
       align-items: flex-end;
       background: rgb(219, 236, 255);
     }
 
-    .message.bot {
+    .overlay-box .message.bot {
       align-self: flex-start;
       background: rgb(198, 255, 220);
     }
 
-    form {
+    .overlay-box form {
       display: flex;
       margin-top: 8px;
     }
 
-    input {
+    .overlay-box input {
       border-radius: 999999px;
       flex-grow: 1;
       border: 1px solid #ccc;
@@ -168,7 +162,7 @@
       margin-right: 8px;
     }
 
-    button {
+    .overlay-box button {
       background: #09f;
       border: 0;
       color: white;
@@ -178,17 +172,17 @@
       transition: background .3s ease;
     }
 
-    button[disabled] {
+    .overlay-box button[disabled] {
       background: #ccc;
       opacity: .6;
       pointer-events: none;
     }
 
-    button:hover {
+    .overlay-box button:hover {
       background: rgb(0, 104, 173);
     }
 
-    small {
+    .overlay-box small {
       font-size: 10px;
       color: #555;
       position: fixed;
@@ -200,7 +194,7 @@
       text-align: center;
     }
 
-    .loading {
+    .overlay-box .loading {
       text-align: center;
       display: flex;
       justify-content: center;
@@ -210,7 +204,7 @@
       margin-top: 50%;
     }
 
-    .loading i {
+    .overlay-box .loading i {
       width: 2.5em;
       height: 2.5em;
       border: 0.4em solid transparent;
@@ -232,13 +226,16 @@
 
     const $ = selector => document.querySelector(selector);
 
-    const $form = $('.overlay-box form');
-    const $input = $('.overlay-box input');
-    const $messages = $('.overlay-box ul');
-    const $container = $('.overlay-box main');
-    const $button = $('.overlay-box button');
-    const $info = $('.overlay-box small');
-    const $loading = $('.overlay-box .loading');
+    const $loginContainer = $('.login-container');
+    const $overlayContainer = $('.overlay-container');
+    const $overlayBox = $('.overlay-box');
+    const $form = $('form', $overlayBox);
+    const $input = $('input', $overlayBox);
+    const $messages = $('ul', $overlayBox);
+    const $container = $('main', $overlayBox);
+    const $button = $('button', $overlayBox);
+    const $info = $('small', $overlayBox);
+    const $loading = $('.loading', $overlayBox);
 
     let messages = [];
     let end = false;
@@ -309,22 +306,51 @@
 
       $messages.appendChild($newMessage);
       $container.scrollTop = $container.scrollHeight;
+
+      return $text;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       initializeChat();
+
+      // Event listener para el formulario de inicio de sesión
+      const loginForm = $('.login-container form');
+      loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const username = $('#username').value.trim();
+        const password = $('#password').value.trim();
+
+        if (username !== '' && password !== '') {
+          alert(`Usuario: ${username}, Contraseña: ${password}`);
+          // Aquí podrías añadir la lógica de autenticación real, como una solicitud HTTP
+        } else {
+          alert('Por favor, introduce usuario y contraseña');
+        }
+      });
+
+      // Event listener para mostrar/ocultar el contenedor del chat
+      const loginButton = $('#loginButton');
+      loginButton.addEventListener('click', () => {
+        $overlayContainer.classList.add('show');
+      });
+
+      const closeChatButton = $('#closeChatButton');
+      closeChatButton.addEventListener('click', () => {
+        $overlayContainer.classList.remove('show');
+      });
     });
   </script>
 </head>
 
 <body>
-  <div class="login-container" id="loginContainer">
-    <h2>Iniciar sesión</h2>
+  <div class="login-container">
+    <h2>Inicio de sesión</h2>
     <form>
-      <input type="text" placeholder="Usuario">
-      <input type="password" placeholder="Contraseña">
+      <input type="text" id="username" placeholder="Usuario">
+      <input type="password" id="password" placeholder="Contraseña">
       <input type="submit" value="Iniciar sesión">
     </form>
+    <button id="loginButton">Abrir Chat</button>
   </div>
 
   <div class="overlay-container" id="overlayContainer">
@@ -343,6 +369,7 @@
         <h4>Cargando...</h4>
         <h5>Esto puede tardar un poco. Paciencia.</h5>
       </div>
+      <button id="closeChatButton">Cerrar Chat</button>
     </div>
   </div>
 </body>
