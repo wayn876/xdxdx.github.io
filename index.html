@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar sesión y ChatGPT</title>
+  <title>Iniciar sesión y opciones</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -60,7 +60,7 @@
       background-color: #4da6ff;
     }
 
-    .login-options {
+    .options-container {
       display: none;
       position: fixed;
       top: 0;
@@ -74,11 +74,11 @@
       z-index: 2;
     }
 
-    .login-options.active {
+    .options-container.active {
       display: flex;
     }
 
-    .options-container {
+    .options {
       background-color: rgba(255, 255, 255, 0.9);
       border-radius: 10px;
       padding: 20px;
@@ -88,12 +88,12 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .options-container h2 {
+    .options h2 {
       margin-top: 0;
       color: #333;
     }
 
-    .options-container a {
+    .options a {
       display: block;
       margin-bottom: 10px;
       padding: 10px;
@@ -104,7 +104,7 @@
       transition: background-color 0.3s ease;
     }
 
-    .options-container a:hover {
+    .options a:hover {
       background-color: #4da6ff;
     }
   </style>
@@ -116,8 +116,8 @@
 
     const $loginContainer = $('.login-container');
     const $loginForm = $('form', $loginContainer);
-    const $loginOptions = $('.login-options');
-    const $optionsContainer = $('.options-container', $loginOptions);
+    const $optionsContainer = $('.options-container');
+    const $options = $('.options', $optionsContainer);
 
     const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
 
@@ -136,7 +136,7 @@
           $loginContainer.style.opacity = '0';
           setTimeout(() => {
             $loginContainer.style.display = 'none';
-            $loginOptions.classList.add('active');
+            $optionsContainer.classList.add('active');
           }, 800); // 800ms para que coincida con la transición de opacidad
         } else {
           alert('Por favor, introduce usuario y contraseña');
@@ -147,9 +147,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       initializeChat();
 
-      const loginOptions = document.querySelectorAll('.options-container a');
-      loginOptions.forEach(option => {
-        option.addEventListener('click', (event) => {
+      const optionsLinks = document.querySelectorAll('.options a');
+      optionsLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
           event.preventDefault();
           const text = event.target.textContent.trim();
           alert(`Opción seleccionada: ${text}`);
@@ -169,12 +169,13 @@
     </form>
   </div>
 
-  <div class="login-options" id="loginOptions">
-    <div class="options-container">
+  <div class="options-container" id="optionsContainer">
+    <div class="options">
       <h2>Selecciona una opción</h2>
-      <a href="#">Registro</a>
-      <a href="#">¿Olvidaste la contraseña?</a>
-      <a href="#">Cerrar</a>
+      <a href="#">Opción 1</a>
+      <a href="#">Opción 2</a>
+      <a href="#">Opción 3</a>
+      <a href="#">Opción 4</a>
     </div>
   </div>
 </body>
