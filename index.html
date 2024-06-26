@@ -91,6 +91,144 @@
     .overlay-container.show .overlay-box {
         opacity: 1; /* Hacer visible cuando el overlay-container tiene la clase show */
     }
+
+    main {
+        width: 400px;
+        max-width: 100%;
+        height: 70vh;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 8px;
+        margin-bottom: 16px;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+    }
+
+    ul {
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+        padding: 0;
+    }
+
+    .message {
+        display: flex;
+        flex-direction: column;
+        margin: 4px 0;
+        padding: 4px 8px;
+    }
+
+    .message span {
+        width: 36px;
+        height: 36px;
+        background: #eee;
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 999999px;
+    }
+
+    .message p {
+        border-radius: 4px;
+        padding: 4px 8px;
+        margin-top: 4px;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .message.bot {
+        align-self: flex-start;
+    }
+
+    form {
+        display: flex;
+    }
+
+    input[type="text"] {
+        border-radius: 999999px;
+        flex-grow: 1;
+        border: 0;
+        padding: 8px;
+        margin-right: 8px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        background: #09f;
+        border: 0;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 8px;
+        transition: background .3s ease;
+    }
+
+    button[disabled] {
+        background: #ccc;
+        opacity: .6;
+        pointer-events: none;
+    }
+
+    button:hover {
+        background: rgb(0, 104, 173);
+    }
+
+    small {
+        font-size: 10px;
+        color: #555;
+        position: fixed;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        margin: auto;
+        width: 400px;
+    }
+
+    .loading {
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        height: 100%;
+        align-items: center;
+        flex-direction: column;
+        margin-top: 50%;
+    }
+
+    .loading i {
+        pointer-events: none;
+        width: 2.5em;
+        height: 2.5em;
+        border: 0.4em solid transparent;
+        border-color: #eee;
+        border-top-color: #3E67EC;
+        border-radius: 50%;
+        animation: loadingspin 1s linear infinite;
+    }
+
+    .loading h4 {
+        color: #444;
+        margin-bottom: 8px;
+    }
+
+    .loading h5 {
+        font-weight: 400;
+        margin: 0;
+        font-size: 10px;
+        opacity: .4;
+    }
+
+    @keyframes loadingspin {
+        100% {
+            transform: rotate(360deg)
+        }
+    }
 </style>
 </head>
 <body>
@@ -108,7 +246,6 @@
         <div class="overlay-box">
             <h3>Opción 1</h3>
             <p>Contenido del cuadro 1</p>
-            <!-- Aquí se inserta el chatbot -->
             <main>
                 <ul>
                     <li class="loading">
@@ -118,17 +255,11 @@
                     </li>
                 </ul>
             </main>
-            <form id="chatForm">
-                <input type="text" id="chatInput" placeholder="Escribe tu mensaje aquí...">
+            <form>
+                <input type="text" placeholder="Escribe tu mensaje aquí...">
                 <button disabled>Enviar</button>
             </form>
             <small>&nbsp;</small>
-            <template id="message-template">
-                <li class="message">
-                    <span></span>
-                    <p></p>
-                </li>
-            </template>
         </div>
         <div class="overlay-box">
             <h3>Opción 2</h3>
@@ -145,7 +276,7 @@
     </div>
 
     <script>
-        async function validateForm() {
+        function validateForm() {
             var username = document.getElementById('username').value;
             var password = document.getElementById('password').value;
 
@@ -153,55 +284,6 @@
                 document.getElementById('message').innerHTML = 'Inicio de sesión exitoso.';
                 document.getElementById('loginContainer').style.opacity = 0;
                 document.getElementById('overlayContainer').classList.add('show');
-
-                // Inicialización del chatbot
-                const $ = el => document.querySelector(el);
-                const $form = $('#chatForm');
-                const $input = $('#chatInput');
-                const $messages = $('ul');
-                const $container = $('main');
-                const $button = $('button');
-                const $template = $('#message-template');
-
-                let messages = [];
-
-                $form.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const messageText = $input.value.trim();
-
-                    if (messageText !== '') {
-                        $input.value = '';
-                    }
-
-                    addMessage(messageText, 'user');
-                    $button.setAttribute('disabled', '');
-
-                    // Aquí iría la lógica de interacción con el chatbot
-
-                    $button.removeAttribute('disabled');
-                    messages.push({
-                        role: 'assistant',
-                        content: 'Respuesta del chatbot'
-                    });
-                    $container.scrollTop = $container.scrollHeight;
-                });
-
-                function addMessage(text, sender) {
-                    const clonedTemplate = $template.content.cloneNode(true);
-                    const $newMessage = clonedTemplate.querySelector('.message');
-                    const $who = $newMessage.querySelector('span');
-                    const $text = $newMessage.querySelector('p');
-
-                    $text.textContent = text;
-                    $who.textContent = sender === 'bot' ? 'GPT' : 'Tú';
-                    $newMessage.classList.add(sender);
-
-                    $messages.appendChild($newMessage);
-                    $container.scrollTop = $container.scrollHeight;
-
-                    return $text;
-                }
-
                 return false; // Evitar el envío del formulario
             } else {
                 document.getElementById('message').innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
@@ -211,4 +293,3 @@
     </script>
 </body>
 </html>
-
