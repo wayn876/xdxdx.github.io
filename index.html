@@ -187,7 +187,7 @@
 <body>
     <div class="login-container" id="loginContainer">
         <h2>Iniciar sesión</h2>
-        <form id="loginForm" onsubmit="return validateForm()">
+        <form id="loginForm">
             <input type="text" id="username" name="username" placeholder="Nombre de usuario" required><br>
             <input type="password" id="password" name="password" placeholder="Contraseña" required><br>
             <input type="submit" value="Iniciar sesión">
@@ -225,67 +225,66 @@
         </div>
     </div>
 
-    <script type="module">
-        const $ = el => document.querySelector(el);
-        const chatForm = $('#chatForm');
-        const chatInput = $('#chatInput');
-        const chatMessages = $('#chatMessages');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginForm = document.getElementById('loginForm');
+            const messageElement = document.getElementById('message');
+            const loginContainer = document.getElementById('loginContainer');
+            const overlayContainer = document.getElementById('overlayContainer');
 
-        let chatHistory = [
-            { role: 'bot', message: '¡Hola! Soy un chatbot. ¿En qué puedo ayudarte?' }
-        ];
+            loginForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
 
-        chatForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            const message = chatInput.value.trim();
-            if (message === '') return;
+                if (username === 'Wayan' && password === 'Gatos15') {
+                    messageElement.textContent = 'Inicio de sesión exitoso.';
+                    loginContainer.style.opacity = 0;
+                    overlayContainer.classList.add('show');
+                } else {
+                    messageElement.textContent = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
+                }
+            });
 
-            addMessage('user', message);
-            chatInput.value = '';
-            chatInput.focus();
+            // Funciones para el chatbot simulado
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
 
-            // Simular respuesta del bot (puedes reemplazar con tu lógica real)
-            await simulateBotReply(message);
-        });
+            chatForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const message = chatInput.value.trim();
+                if (message === '') return;
 
-        async function simulateBotReply(userMessage) {
-            const botMessage = await getBotReply(userMessage);
-            addMessage('bot', botMessage);
-        }
+                addMessage('user', message);
+                chatInput.value = '';
+                chatInput.focus();
 
-        async function getBotReply(message) {
-            // Aquí puedes realizar la solicitud a tu modelo de chatbot (no implementado aquí)
-            // Esta función debe devolver la respuesta del chatbot según el mensaje del usuario
-            // Puedes implementar esto usando Web Workers y manejar la lógica del modelo de ML aquí
-            // Ejemplo de respuesta simulada:
-            return `Esto es una respuesta del bot a: "${message}"`;
-        }
+                // Simular respuesta del bot (puedes reemplazar con tu lógica real)
+                simulateBotReply(message);
+            });
 
-        function addMessage(role, text) {
-            const messageElement = document.createElement('li');
-            messageElement.classList.add('message', role === 'bot' ? 'bot' : 'user');
-            messageElement.innerHTML = `
-                <span>${role === 'bot' ? 'GPT' : 'Tú'}</span>
-                <p>${text}</p>
-            `;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function validateForm() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (username === 'Wayan' && password === 'Gatos15') {
-                document.getElementById('message').innerHTML = 'Inicio de sesión exitoso.';
-                document.getElementById('loginContainer').style.opacity = 0;
-                document.getElementById('overlayContainer').classList.add('show');
-                return false; // Evitar el envío del formulario
-            } else {
-                document.getElementById('message').innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
-                return false; // Evitar el envío del formulario
+            function simulateBotReply(userMessage) {
+                const botMessage = getBotReply(userMessage);
+                addMessage('bot', botMessage);
             }
-        }
+
+            function getBotReply(message) {
+                // Simulación de respuesta del bot
+                return `Esto es una respuesta del bot a: "${message}"`;
+            }
+
+            function addMessage(role, text) {
+                const messageElement = document.createElement('li');
+                messageElement.classList.add('message', role === 'bot' ? 'bot' : 'user');
+                messageElement.innerHTML = `
+                    <span>${role === 'bot' ? 'GPT' : 'Tú'}</span>
+                    <p>${text}</p>
+                `;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
     </script>
 </body>
 </html>
