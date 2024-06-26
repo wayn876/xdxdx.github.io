@@ -60,9 +60,9 @@
       background-color: #4da6ff;
     }
 
-    .chat-container {
+    .options-container {
       display: none;
-      position: fixed;
+      position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -70,73 +70,74 @@
       border-radius: 10px;
       padding: 20px;
       width: 80%;
-      max-width: 400px;
+      max-width: 600px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       z-index: 2;
     }
 
-    .chat-container.active {
-      display: block;
+    .options-container.active {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
     }
 
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: transparent;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
+    .option-box {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .option-box h3 {
       color: #333;
     }
   </style>
 
-  <script type="module">
-    import { CreateWebWorkerMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm";
-
+  <script>
     const $ = selector => document.querySelector(selector);
 
-    const $loginContainer = $('.login-container');
-    const $loginForm = $('form', $loginContainer);
-    const $chatContainer = $('.chat-container');
+    document.addEventListener('DOMContentLoaded', () => {
+      const $loginContainer = $('.login-container');
+      const $optionsContainer = $('.options-container');
 
-    const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
+      const $loginForm = $('form', $loginContainer);
+      const $usernameInput = $('#username');
+      const $passwordInput = $('#password');
+      const $submitButton = $('input[type="submit"]', $loginForm);
 
-    async function initializeChat() {
-      const engine = await CreateWebWorkerMLCEngine(
-        new Worker('./worker.js', { type: 'module' }),
-        SELECTED_MODEL
-      );
+      const $optionBoxes = Array.from(document.querySelectorAll('.option-box'));
 
-      $loginForm.addEventListener('submit', async (event) => {
+      $loginForm.addEventListener('submit', event => {
         event.preventDefault();
-        const username = $('#username').value.trim();
-        const password = $('#password').value.trim();
 
-        if (username !== '' && password !== '') {
+        const username = $usernameInput.value.trim();
+        const password = $passwordInput.value.trim();
+
+        if (username === 'usuario' && password === 'contraseña') { // Aquí puedes cambiar las credenciales
           $loginContainer.style.opacity = '0';
           setTimeout(() => {
             $loginContainer.style.display = 'none';
-            $chatContainer.classList.add('active');
+            $optionsContainer.classList.add('active');
           }, 800); // 800ms para que coincida con la transición de opacidad
         } else {
-          alert('Por favor, introduce usuario y contraseña');
+          alert('Credenciales incorrectas. Por favor, intenta nuevamente.');
         }
       });
 
-      const closeButton = $('.close-button');
-      closeButton.addEventListener('click', () => {
-        $chatContainer.classList.remove('active');
-        $loginContainer.style.display = 'block';
-        $loginContainer.style.opacity = '1';
+      $optionBoxes.forEach(box => {
+        box.addEventListener('click', () => {
+          alert(`Has seleccionado la opción: ${box.querySelector('h3').textContent}`);
+        });
       });
-    }
+    });
   </script>
 </head>
 
 <body>
   <div class="login-container">
-    <h2>Inicio de sesión</h2>
+    <h2>Iniciar sesión</h2>
     <form>
       <input type="text" id="username" placeholder="Usuario">
       <input type="password" id="password" placeholder="Contraseña">
@@ -144,11 +145,23 @@
     </form>
   </div>
 
-  <div class="chat-container" id="chatContainer">
-    <button class="close-button">&times;</button>
-    <h2>ChatGPT</h2>
-    <p>Este es el contenido del chat...</p>
-    <!-- Aquí puedes incluir el contenido del chat según tu implementación -->
+  <div class="options-container">
+    <div class="option-box">
+      <h3>Opción 1</h3>
+      <p>Contenido de la opción 1</p>
+    </div>
+    <div class="option-box">
+      <h3>Opción 2</h3>
+      <p>Contenido de la opción 2</p>
+    </div>
+    <div class="option-box">
+      <h3>Opción 3</h3>
+      <p>Contenido de la opción 3</p>
+    </div>
+    <div class="option-box">
+      <h3>Opción 4</h3>
+      <p>Contenido de la opción 4</p>
+    </div>
   </div>
 </body>
 
