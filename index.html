@@ -60,7 +60,8 @@
       background-color: #4da6ff;
     }
 
-    .overlay-container {
+    .login-options {
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
@@ -71,17 +72,13 @@
       align-items: center;
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 2;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s ease;
     }
 
-    .overlay-container.show {
-      opacity: 1;
-      pointer-events: auto;
+    .login-options.active {
+      display: flex;
     }
 
-    .overlay-box {
+    .options-container {
       background-color: rgba(255, 255, 255, 0.9);
       border-radius: 10px;
       padding: 20px;
@@ -91,146 +88,24 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .overlay-box h2 {
+    .options-container h2 {
       margin-top: 0;
       color: #333;
     }
 
-    .overlay-box main {
-      height: 50vh;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 16px;
-      padding: 8px;
-    }
-
-    .overlay-box ul {
-      display: flex;
-      flex-direction: column;
-      list-style: none;
-      padding: 0;
-    }
-
-    .overlay-box .message {
-      display: flex;
-      flex-direction: column;
-      margin: 4px 0;
-      padding: 4px 8px;
-    }
-
-    .overlay-box .message span {
-      width: 36px;
-      height: 36px;
-      background: #eee;
-      font-size: 12px;
-      font-weight: 500;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 999999px;
-    }
-
-    .overlay-box .message p {
-      border-radius: 4px;
-      padding: 8px;
-      margin-top: 4px;
-    }
-
-    .overlay-box .message.user {
-      align-self: flex-end;
-      align-items: flex-end;
-      background: rgb(219, 236, 255);
-    }
-
-    .overlay-box .message.bot {
-      align-self: flex-start;
-      background: rgb(198, 255, 220);
-    }
-
-    .overlay-box form {
-      display: flex;
-      margin-top: 8px;
-    }
-
-    .overlay-box input {
-      border-radius: 999999px;
-      flex-grow: 1;
-      border: 1px solid #ccc;
-      padding: 8px;
-      margin-right: 8px;
-    }
-
-    .overlay-box button {
-      background: #09f;
-      border: 0;
+    .options-container a {
+      display: block;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #66c2ff;
       color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      padding: 8px;
-      transition: background .3s ease;
-    }
-
-    .overlay-box button[disabled] {
-      background: #ccc;
-      opacity: .6;
-      pointer-events: none;
-    }
-
-    .overlay-box button:hover {
-      background: rgb(0, 104, 173);
-    }
-
-    .overlay-box small {
-      font-size: 10px;
-      color: #555;
-      position: fixed;
-      bottom: 10px;
-      left: 0;
-      right: 0;
-      margin: auto;
-      width: 400px;
-      text-align: center;
-    }
-
-    .overlay-box .loading {
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      height: 100%;
-      align-items: center;
-      flex-direction: column;
-      margin-top: 50%;
-    }
-
-    .overlay-box .loading i {
-      width: 2.5em;
-      height: 2.5em;
-      border: 0.4em solid transparent;
-      border-color: #eee;
-      border-top-color: #3E67EC;
-      border-radius: 50%;
-      animation: loadingspin 1s linear infinite;
-    }
-
-    @keyframes loadingspin {
-      100% {
-        transform: rotate(360deg)
-      }
-    }
-
-    .login-options {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
-
-    .login-options a {
       text-decoration: none;
-      color: #09f;
-      font-size: 14px;
-      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .options-container a:hover {
+      background-color: #4da6ff;
     }
   </style>
 
@@ -240,123 +115,39 @@
     const $ = selector => document.querySelector(selector);
 
     const $loginContainer = $('.login-container');
-    const $overlayContainer = $('.overlay-container');
-    const $overlayBox = $('.overlay-box');
-    const $form = $('form', $overlayBox);
-    const $input = $('input', $overlayBox);
-    const $messages = $('ul', $overlayBox);
-    const $container = $('main', $overlayBox);
-    const $button = $('button', $overlayBox);
-    const $info = $('small', $overlayBox);
-    const $loading = $('.loading', $overlayBox);
-
-    let messages = [];
-    let end = false;
+    const $loginForm = $('form', $loginContainer);
+    const $loginOptions = $('.login-options');
+    const $optionsContainer = $('.options-container', $loginOptions);
 
     const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
 
     async function initializeChat() {
       const engine = await CreateWebWorkerMLCEngine(
         new Worker('./worker.js', { type: 'module' }),
-        SELECTED_MODEL,
-        {
-          initProgressCallback: (info) => {
-            $info.textContent = info.text;
-            if (info.progress === 1 && !end) {
-              end = true;
-              $loading.parentNode.removeChild($loading);
-              $button.removeAttribute('disabled');
-              addMessage("¡Hola! Soy un ChatGPT que se ejecuta completamente en tu navegador. ¿En qué puedo ayudarte hoy?", 'bot');
-              $input.focus();
-            }
-          }
-        }
+        SELECTED_MODEL
       );
 
-      $form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const messageText = $input.value.trim();
-
-        if (messageText !== '') {
-          $input.value = '';
-          addMessage(messageText, 'user');
-          $button.setAttribute('disabled', '');
-
-          messages.push({ role: 'user', content: messageText });
-
-          const chunks = await engine.chat.completions.create({
-            messages,
-            stream: true
-          });
-
-          let reply = "";
-
-          for await (const chunk of chunks) {
-            const choice = chunk.choices[0];
-            const content = choice?.delta?.content ?? "";
-            reply += content;
-          }
-
-          addMessage(reply, 'bot');
-          messages.push({ role: 'assistant', content: reply });
-          $container.scrollTop = $container.scrollHeight;
-          $button.removeAttribute('disabled');
-        }
-      });
-    }
-
-    function addMessage(text, sender) {
-      const $newMessage = document.createElement('li');
-      $newMessage.classList.add('message', sender);
-
-      const $who = document.createElement('span');
-      $who.textContent = sender === 'bot' ? 'GPT' : 'Tú';
-      $newMessage.appendChild($who);
-
-      const $text = document.createElement('p');
-      $text.textContent = text;
-      $newMessage.appendChild($text);
-
-      $messages.appendChild($newMessage);
-      $container.scrollTop = $container.scrollHeight;
-
-      return $text;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      // Event listener para el formulario de inicio de sesión
-      const loginForm = $('.login-container form');
-      loginForm.addEventListener('submit', (event) => {
+      $loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const username = $('#username').value.trim();
         const password = $('#password').value.trim();
 
         if (username !== '' && password !== '') {
-          alert(`Usuario: ${username}, Contraseña: ${password}`);
-          // Aquí podrías añadir la lógica de autenticación real, como una solicitud HTTP
+          $loginContainer.style.opacity = '0';
+          setTimeout(() => {
+            $loginContainer.style.display = 'none';
+            $loginOptions.classList.add('active');
+          }, 800); // 800ms para que coincida con la transición de opacidad
         } else {
           alert('Por favor, introduce usuario y contraseña');
         }
       });
+    }
 
-      // Event listener para mostrar/ocultar el contenedor del chat
-      const loginButton = $('#loginButton');
-      loginButton.addEventListener('click', () => {
-        $overlayContainer.classList.add('show');
-      });
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeChat();
 
-      const closeChatButton = $('#closeChatButton');
-      closeChatButton.addEventListener('click', () => {
-        $overlayContainer.classList.remove('show');
-      });
-
-      // Inicializar el chat cuando se abra el overlay
-      loginButton.addEventListener('click', () => {
-        initializeChat();
-      });
-
-      // Event listener para las opciones de inicio de sesión
-      const loginOptions = document.querySelectorAll('.login-options a');
+      const loginOptions = document.querySelectorAll('.options-container a');
       loginOptions.forEach(option => {
         option.addEventListener('click', (event) => {
           event.preventDefault();
@@ -376,31 +167,14 @@
       <input type="password" id="password" placeholder="Contraseña">
       <input type="submit" value="Iniciar sesión">
     </form>
-    <div class="login-options">
+  </div>
+
+  <div class="login-options" id="loginOptions">
+    <div class="options-container">
+      <h2>Selecciona una opción</h2>
       <a href="#">Registro</a>
       <a href="#">¿Olvidaste la contraseña?</a>
       <a href="#">Cerrar</a>
-    </div>
-    <button id="loginButton">Abrir Chat</button>
-  </div>
-
-  <div class="overlay-container" id="overlayContainer">
-    <div class="overlay-box">
-      <h2>ChatGPT Local 100% privado, gratis y maravilloso</h2>
-      <main>
-        <ul></ul>
-      </main>
-      <form>
-        <input placeholder="Escribe tu mensaje aquí...">
-        <button disabled>Enviar</button>
-      </form>
-      <small>&nbsp;</small>
-      <div class="loading">
-        <i></i>
-        <h4>Cargando...</h4>
-        <h5>Esto puede tardar un poco. Paciencia.</h5>
-      </div>
-      <button id="closeChatButton">Cerrar Chat</button>
     </div>
   </div>
 </body>
