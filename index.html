@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -93,49 +92,245 @@
     .option-box h3 {
       color: #333;
     }
-  </style>
 
-  <script>
+    /* Estilos para el chat GPT-3 */
+    main {
+      width: 400px;
+      max-width: 100%;
+      height: 70vh;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      margin-bottom: 16px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      list-style: none;
+      padding: 0;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      margin: 4px 0;
+      padding: 4px 8px;
+    }
+
+    .message span {
+      width: 36px;
+      height: 36px;
+      background: #eee;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 999999px;
+    }
+
+    .message p {
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin-top: 4px;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      align-items: flex-end;
+      background: rgb(219, 236, 255);
+    }
+
+    .message.bot {
+      align-self: flex-start;
+      background: rgb(198, 255, 220);
+    }
+
+    form {
+      display: flex;
+      margin-top: 16px;
+    }
+
+    input {
+      border-radius: 999999px;
+      flex-grow: 1;
+      border: 0;
+      padding: 8px;
+      margin-right: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #09f;
+      border: 0;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 8px;
+      transition: background .3s ease;
+    }
+
+    button[disabled] {
+      background: #ccc;
+      opacity: .6;
+      pointer-events: none;
+    }
+
+    button:hover {
+      background: rgb(0, 104, 173);
+    }
+
+    small {
+      font-size: 10px;
+      color: #555;
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      width: 400px;
+    }
+
+    .loading {
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      height: 100%;
+      align-items: center;
+      flex-direction: column;
+      margin-top: 50%;
+    }
+
+    .loading i {
+      width: 2.5em;
+      height: 2.5em;
+      border: 0.4em solid transparent;
+      border-color: #eee;
+      border-top-color: #3E67EC;
+      border-radius: 50%;
+      animation: loadingspin 1s linear infinite;
+    }
+
+    @keyframes loadingspin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <script type="module">
+    import { CreateWebWorkerMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm";
+
     const $ = selector => document.querySelector(selector);
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const $loginContainer = $('.login-container');
       const $optionsContainer = $('.options-container');
+      const $chatContainer = $('main');
+      const $input = $('input', $chatContainer);
+      const $form = $('form', $chatContainer);
+      const $button = $('button', $chatContainer);
+      const $loading = $('.loading');
 
-      const $loginForm = $('form', $loginContainer);
-      const $usernameInput = $('#username');
-      const $passwordInput = $('#password');
-      const $submitButton = $('input[type="submit"]', $loginForm);
+      let messages = [];
+      let end = false;
 
-      const $optionBoxes = Array.from(document.querySelectorAll('.option-box'));
+      const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
 
-      $loginForm.addEventListener('submit', event => {
-        event.preventDefault();
-
-        const username = $usernameInput.value.trim();
-        const password = $passwordInput.value.trim();
-
-        // Cambia las credenciales aquí
-        if (username === 'Wayan' && password === 'Gatos15') {
-          $loginContainer.style.opacity = '0';
-          setTimeout(() => {
-            $loginContainer.style.display = 'none';
-            $optionsContainer.classList.add('active');
-          }, 800); // 800ms para que coincida con la transición de opacidad
-        } else {
-          alert('Credenciales incorrectas. Por favor, intenta nuevamente.');
+      const engine = await CreateWebWorkerMLCEngine(
+        new Worker('./worker.js', { type: 'module' }),
+        SELECTED_MODEL,
+        {
+          initProgressCallback: (info) => {
+            $loading.style.display = 'block';
+            $button.setAttribute('disabled', '');
+            if (info.progress === 1 && !end) {
+              end = true;
+              $loading.style.display = 'none';
+              $button.removeAttribute('disabled');
+              addMessage("¡Hola! Soy un ChatGPT que se ejecuta completamente en tu navegador. ¿En qué puedo ayudarte hoy?", 'bot');
+              $input.focus();
+            }
+          }
         }
+      );
+
+      $form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const messageText = $input.value.trim();
+        if (messageText !== '') {
+          $input.value = '';
+        }
+        addMessage(messageText, 'user');
+        $button.setAttribute('disabled', '');
+
+        const userMessage = {
+          role: 'user',
+          content: messageText
+        };
+
+        messages.push(userMessage);
+
+        const chunks = await engine.chat.completions.create({
+          messages,
+          stream: true
+        });
+
+        let reply = "";
+
+        const $botMessage = addMessage("", 'bot');
+
+        for await (const chunk of chunks) {
+          const choice = chunk.choices[0];
+          const content = choice?.delta?.content ?? "";
+          reply += content;
+          $botMessage.textContent = reply;
+        }
+
+        $button.removeAttribute('disabled');
+        messages.push({
+          role: 'assistant',
+          content: reply
+        });
+        $chatContainer.scrollTop = $chatContainer.scrollHeight;
       });
 
-      $optionBoxes.forEach(box => {
-        box.addEventListener('click', () => {
-          alert(`Has seleccionado la opción: ${box.querySelector('h3').textContent}`);
-        });
-      });
+      function addMessage(text, sender) {
+        const $newMessage = document.createElement('li');
+        $newMessage.classList.add('message', sender);
+
+        const $who = document.createElement('span');
+        $who.textContent = sender === 'bot' ? 'GPT' : 'Tú';
+        $who.style.width = '36px';
+        $who.style.height = '36px';
+        $who.style.background = '#eee';
+        $who.style.fontSize = '12px';
+        $who.style.fontWeight = '500';
+        $who.style.display = 'flex';
+        $who.style.justifyContent = 'center';
+        $who.style.alignItems = 'center';
+        $who.style.borderRadius = '999999px';
+
+        const $text = document.createElement('p');
+        $text.textContent = text;
+        $text.style.borderRadius = '4px';
+        $text.style.padding = '4px 8px';
+        $text.style.marginTop = '4px';
+
+        $newMessage.appendChild($who);
+        $newMessage.appendChild($text);
+        $chatContainer.querySelector('ul').appendChild($newMessage);
+        $chatContainer.scrollTop = $chatContainer.scrollHeight;
+
+        return $text;
+      }
     });
   </script>
 </head>
-
 <body>
   <div class="login-container">
     <h2>Iniciar sesión</h2>
@@ -150,6 +345,21 @@
     <div class="option-box">
       <h3>Opción 1</h3>
       <p>Contenido de la opción 1</p>
+      <!-- Aquí se integrará el chat GPT-3 -->
+      <main>
+        <ul>
+          <li class="loading">
+            <i></i>
+            <h4>Cargando...</h4>
+            <h5>Esto puede tardar un poco. Paciencia.</h5>
+          </li>
+        </ul>
+        <form>
+          <input placeholder="Escribe tu mensaje aquí...">
+          <button disabled>Enviar</button>
+        </form>
+        <small>&nbsp;</small>
+      </main>
     </div>
     <div class="option-box">
       <h3>Opción 2</h3>
@@ -165,6 +375,4 @@
     </div>
   </div>
 </body>
-
 </html>
-
