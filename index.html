@@ -240,22 +240,21 @@
     <div class="overlay-container" id="overlayContainer">
         <div class="overlay-box">
             <h3>Opción 1</h3>
-            <p>Contenido del cuadro 1</p>
-            <div class="small-text">small</div> <!-- Texto "small" dentro de Opción 1 -->
-            <main>
-                <ul>
-                    <li class="loading">
-                        <i></i>
-                        <h4>Cargando...</h4>
-                        <h5>Esto puede tardar un poco. Paciencia.</h5>
-                    </li>
-                </ul>
-            </main>
-            <form>
-                <input type="text" placeholder="Escribe tu mensaje aquí...">
-                <button disabled>Enviar</button>
-            </form>
-            <small>&nbsp;</small>
+            <div class="chat-container">
+                <main>
+                    <ul id="messageList">
+                        <li class="loading">
+                            <i></i>
+                            <h4>Cargando...</h4>
+                            <h5>Esto puede tardar un poco. Paciencia.</h5>
+                        </li>
+                    </ul>
+                </main>
+                <form id="chatForm">
+                    <input type="text" id="chatInput" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+                    <button type="submit" id="sendMessageButton" disabled>Enviar</button>
+                </form>
+            </div>
         </div>
         <div class="overlay-box">
             <h3>Opción 2</h3>
@@ -280,11 +279,56 @@
                 document.getElementById('message').innerHTML = 'Inicio de sesión exitoso.';
                 document.getElementById('loginContainer').style.opacity = 0;
                 document.getElementById('overlayContainer').classList.add('show');
+                initializeChat();
                 return false; // Evitar el envío del formulario
             } else {
                 document.getElementById('message').innerHTML = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
                 return false; // Evitar el envío del formulario
             }
+        }
+
+        async function initializeChat() {
+            const messageList = document.getElementById('messageList');
+            const chatInput = document.getElementById('chatInput');
+            const sendMessageButton = document.getElementById('sendMessageButton');
+            const loadingMessage = messageList.querySelector('.loading');
+            const chatForm = document.getElementById('chatForm');
+
+            loadingMessage.style.display = 'flex';
+
+            // Simulación de carga de mensajes
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            loadingMessage.style.display = 'none';
+
+            chatForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const userMessage = chatInput.value.trim();
+
+                if (userMessage === '') return;
+
+                appendMessage(userMessage, 'user');
+
+                chatInput.value = '';
+                sendMessageButton.disabled = true;
+
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulación de respuesta del bot
+
+                const botMessage = `¡Hola! Soy un bot respondiendo a "${userMessage}".`;
+                appendMessage(botMessage, 'bot');
+            });
+
+            function appendMessage(message, role) {
+                const messageElement = document.createElement('li');
+                messageElement.className = `message ${role}`;
+                messageElement.innerHTML = `<span>${role.charAt(0).toUpperCase()}</span><p>${message}</p>`;
+                messageList.appendChild(messageElement);
+                messageList.scrollTop = messageList.scrollHeight;
+            }
+
+            chatInput.addEventListener('input', function() {
+                sendMessageButton.disabled = chatInput.value.trim() === '';
+            });
         }
     </script>
 </body>
