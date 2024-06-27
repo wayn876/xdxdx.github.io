@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inicio de sesión y Opciones</title>
+  <title>ChatGPT Local - Opción 1</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -59,77 +61,181 @@
       background-color: #4da6ff;
     }
 
-    .options-container {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 10px;
-      padding: 20px;
-      width: 80%;
-      max-width: 600px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      z-index: 2;
-    }
-
-    .options-container.active {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-
     .option-box {
-      background-color: #fff;
+      display: none; /* Inicialmente oculto */
+      background-color: rgba(255, 255, 255, 0.9);
       border: 1px solid #ccc;
       border-radius: 10px;
       padding: 20px;
       text-align: center;
       box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      max-width: 600px;
+      margin: auto;
+      position: relative;
+      transition: opacity 0.5s, height 0.5s; /* Animación de transición */
+      height: 70vh;
+      overflow-y: auto;
+    }
+
+    .option-box.active {
+      display: block; /* Mostrar cuando está activo */
     }
 
     .option-box h3 {
       color: #333;
     }
+
+    .messages {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow-y: auto;
+      max-height: calc(70vh - 80px); /* Ajustar según el diseño */
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+
+    .message.user {
+      background-color: #66c2ff;
+      color: white;
+      text-align: right;
+    }
+
+    .message.bot {
+      background-color: #4da6ff;
+      color: white;
+      text-align: left;
+    }
+
+    .message p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    form {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    form input[type="text"] {
+      width: calc(100% - 70px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    form button {
+      width: 60px;
+      padding: 10px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #66c2ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #4da6ff;
+    }
   </style>
 
-  <script>
+  <script type="module">
+    /* Importar el modelo de GPT */
+    import { CreateWebWorkerMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm";
+
     const $ = selector => document.querySelector(selector);
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const $loginContainer = $('.login-container');
-      const $optionsContainer = $('.options-container');
+      const $optionBox = $('.option-box');
+      const $messages = $('.messages');
+      const $form = $('form');
+      const $input = $('input[type="text"]');
+      const $submitButton = $('button');
 
-      const $loginForm = $('form', $loginContainer);
-      const $usernameInput = $('#username');
-      const $passwordInput = $('#password');
-      const $submitButton = $('input[type="submit"]', $loginForm);
+      // Datos de prueba de inicio de sesión
+      const username = 'Wayan';
+      const password = 'Gatos15';
 
-      const $optionBoxes = Array.from(document.querySelectorAll('.option-box'));
-
-      $loginForm.addEventListener('submit', event => {
+      $form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        const username = $usernameInput.value.trim();
-        const password = $passwordInput.value.trim();
-
-        if (username === 'Wayan' && password === 'Gatos15') {
+        if (authenticate(username, password)) {
           $loginContainer.style.opacity = '0';
           setTimeout(() => {
             $loginContainer.style.display = 'none';
-            $optionsContainer.classList.add('active');
+            $optionBox.classList.add('active');
+            // Mostrar los cuadros adicionales al activar el chat
+            const additionalBoxes = document.querySelectorAll('.additional-box');
+            additionalBoxes.forEach(box => box.style.display = 'block');
           }, 800); // Tiempo de espera para la transición de opacidad
+
+          // Iniciar el chat
+          await initChat();
         } else {
           alert('Credenciales incorrectas. Por favor, intenta nuevamente.');
         }
       });
 
-      $optionBoxes.forEach(box => {
-        box.addEventListener('click', () => {
-          alert(Has seleccionado la opción: ${box.querySelector('h3').textContent});
+      async function initChat() {
+        const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k';
+        const engine = await CreateWebWorkerMLCEngine(
+          new Worker('./worker.js', { type: 'module' }),
+          SELECTED_MODEL
+        );
+
+        $form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const messageText = $input.value.trim();
+
+          if (messageText !== '') {
+            addMessage(messageText, 'user');
+            $input.value = '';
+
+            const userMessage = {
+              role: 'user',
+              content: messageText
+            };
+
+            const chunks = await engine.chat.completions.create({
+              messages: [userMessage],
+              stream: true
+            });
+
+            let botResponse = '';
+
+            for await (const chunk of chunks) {
+              const choice = chunk.choices[0];
+              const content = choice?.delta?.content ?? '';
+              botResponse += content;
+            }
+
+            addMessage(botResponse, 'bot');
+          }
         });
-      });
+      }
+
+      function addMessage(text, sender) {
+        const message = document.createElement('li');
+        message.classList.add('message', sender);
+        message.innerHTML = `<p>${text}</p>`;
+        $messages.appendChild(message);
+        $messages.scrollTop = $messages.scrollHeight;
+      }
+
+      function authenticate(user, pass) {
+        // Simulación de autenticación (reemplazar con lógica real)
+        return user === 'Wayan' && pass === 'Gatos15';
+      }
     });
   </script>
 </head>
@@ -144,23 +250,33 @@
     </form>
   </div>
 
-  <div class="options-container">
-    <div class="option-box">
-      <h3>Opción 1</h3>
-      <p>Contenido de la opción 1</p>
-    </div>
-    <div class="option-box">
-      <h3>Opción 2</h3>
-      <p>Contenido de la opción 2</p>
-    </div>
-    <div class="option-box">
-      <h3>Opción 3</h3>
-      <p>Contenido de la opción 3</p>
-    </div>
-    <div class="option-box">
-      <h3>Opción 4</h3>
-      <p>Contenido de la opción 4</p>
-    </div>
+  <div class="option-box">
+    <h3>Opción 1 - Chat Privado</h3>
+    <ul class="messages"></ul>
+    <form>
+      <input type="text" placeholder="Escribe tu mensaje...">
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <!-- Cuadros adicionales ocultos inicialmente -->
+  <div class="additional-box">
+    <h3>Opción 2</h3>
+    <!-- Contenido opcional para el cuadro adicional -->
+  </div>
+  <div class="additional-box">
+    <h3>Opción 3</h3>
+    <!-- Contenido opcional para el cuadro adicional -->
+  </div>
+  <div class="additional-box">
+    <h3>Opción 4</h3>
+    <!-- Contenido opcional para el cuadro adicional -->
+  </div>
+  <div class="additional-box">
+    <h3>Opción 5</h3>
+    <!-- Contenido opcional para el cuadro adicional -->
   </div>
 </body>
+
 </html>
+
