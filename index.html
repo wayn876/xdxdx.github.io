@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
-
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +18,7 @@
       overflow: hidden;
     }
 
-    .login-container {
+    .option-box {
       background-color: rgba(255, 255, 255, 0.5);
       border: 2px solid #66c2ff;
       border-radius: 20px;
@@ -33,12 +32,12 @@
       position: relative;
     }
 
-    .login-container h2 {
+    .option-box h2 {
       color: #333;
     }
 
-    .login-container input[type="text"],
-    .login-container input[type="password"] {
+    .option-box input[type="text"],
+    .option-box input[type="password"] {
       width: calc(100% - 20px);
       padding: 10px;
       margin: 10px 0;
@@ -46,7 +45,7 @@
       border-radius: 5px;
     }
 
-    .login-container input[type="submit"] {
+    .option-box input[type="submit"] {
       width: 100%;
       padding: 10px;
       border: none;
@@ -57,11 +56,11 @@
       font-size: 16px;
     }
 
-    .login-container input[type="submit"]:hover {
+    .option-box input[type="submit"]:hover {
       background-color: #4da6ff;
     }
 
-    .option-box {
+    .chat-container {
       display: none; /* Inicialmente oculto */
       background-color: rgba(255, 255, 255, 0.9);
       border: 1px solid #ccc;
@@ -78,11 +77,11 @@
       overflow-y: auto;
     }
 
-    .option-box.active {
+    .chat-container.active {
       display: block; /* Mostrar cuando está activo */
     }
 
-    .option-box h3 {
+    .chat-container h3 {
       color: #333;
     }
 
@@ -155,8 +154,8 @@
     const $ = selector => document.querySelector(selector);
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const $loginContainer = $('.login-container');
       const $optionBox = $('.option-box');
+      const $chatContainer = $('.chat-container');
       const $messages = $('.messages');
       const $form = $('form');
       const $input = $('input[type="text"]');
@@ -170,13 +169,10 @@
         event.preventDefault();
 
         if (authenticate(username, password)) {
-          $loginContainer.style.opacity = '0';
+          $optionBox.style.opacity = '0';
           setTimeout(() => {
-            $loginContainer.style.display = 'none';
-            $optionBox.classList.add('active');
-            // Mostrar los cuadros adicionales al activar el chat
-            const additionalBoxes = document.querySelectorAll('.additional-box');
-            additionalBoxes.forEach(box => box.style.display = 'block');
+            $optionBox.style.display = 'none';
+            $chatContainer.classList.add('active');
           }, 800); // Tiempo de espera para la transición de opacidad
 
           // Iniciar el chat
@@ -239,9 +235,8 @@
     });
   </script>
 </head>
-
 <body>
-  <div class="login-container">
+  <div class="option-box">
     <h2>Iniciar sesión</h2>
     <form>
       <input type="text" id="username" placeholder="Usuario">
@@ -250,16 +245,13 @@
     </form>
   </div>
 
-  <div class="option-box">
-    <h3>Opción 1 - Chat Privado</h3>
+  <div class="chat-container">
+    <h3>Chat Privado</h3>
     <ul class="messages"></ul>
     <form>
       <input type="text" placeholder="Escribe tu mensaje...">
       <button type="submit">Enviar</button>
     </form>
   </div>
-
 </body>
-
 </html>
-
